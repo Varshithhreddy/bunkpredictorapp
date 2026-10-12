@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Attendance Predictor</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--bg:#f3f4f9;--card:#fff;--tx:#1b1f2a;--mu:#6b7280;--bd:#e3e6ee;--ac:#4f46e5;--ok:#16a34a;--warn:#d97706;--bad:#dc2626}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1117;--card:#181b24;--tx:#e8eaf0;--mu:#9aa1b0;--bd:#2a2f3c;--ac:#818cf8;--ok:#4ade80;--warn:#fbbf24;--bad:#f87171}}
+:root[data-theme="dark"]{--bg:#0f1117;--card:#181b24;--tx:#e8eaf0;--mu:#9aa1b0;--bd:#2a2f3c;--ac:#818cf8;--ok:#4ade80;--warn:#fbbf24;--bad:#f87171}
+html{scroll-padding-top:env(safe-area-inset-top,0px);height:100%}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;height:100%;background:var(--bg);color:var(--tx);font:16px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;overflow:hidden}
+#app{height:100%;display:flex;flex-direction:column;max-width:640px;margin:0 auto}
+header{padding:14px 16px 6px}header h1{font-size:20px;margin:0}header p{margin:2px 0 0;font-size:13px;color:var(--mu)}
+nav{display:flex;margin:6px 12px 0;background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:4px;position:relative}
+nav button{flex:1;background:none;border:0;color:var(--mu);font:600 14px inherit;font-family:inherit;padding:10px 4px;border-radius:10px;z-index:1;cursor:pointer}
+nav button.on{color:#fff}
+#ind{position:absolute;top:4px;bottom:4px;left:4px;width:calc((100% - 8px)/3);background:var(--ac);border-radius:10px;transition:transform .25s}
+#pan{flex:1;display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scrollbar-width:none;margin-top:8px;overscroll-behavior-x:contain}
+#pan::-webkit-scrollbar{display:none}
+section{flex:0 0 100%;scroll-snap-align:start;scroll-snap-stop:always;overflow-y:auto;padding:4px 12px 28px;-webkit-overflow-scrolling:touch}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:16px;padding:14px;margin-bottom:12px}
+h2{font-size:15px;margin:0 0 10px}
+textarea{width:100%;min-height:150px;border:1px solid var(--bd);border-radius:12px;padding:10px;background:var(--bg);color:var(--tx);font:14px ui-monospace,Menlo,monospace}
+input[type=number],input[type=text]{border:1px solid var(--bd);border-radius:10px;padding:9px 10px;background:var(--bg);color:var(--tx);width:100%;font:16px inherit;font-family:inherit}
+.btn{background:var(--ac);color:#fff;border:0;border-radius:12px;padding:12px 16px;font:600 15px inherit;font-family:inherit;cursor:pointer}
+.btn.g{background:transparent;color:var(--tx);border:1px solid var(--bd)}
+.btns{display:flex;gap:8px;margin-top:10px}.btns .btn{flex:1}
+.note{font-size:12px;color:var(--mu);margin-top:8px}
+label{font-size:12px;color:var(--mu);display:block;margin:0 0 4px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.sub .top{display:flex;gap:8px;align-items:center;margin-bottom:10px}
+.sub .top input{flex:1;font-weight:600}
+.x{background:none;border:1px solid var(--bd);color:var(--mu);border-radius:10px;width:40px;height:40px;font-size:16px;cursor:pointer}
+.bar{height:8px;background:var(--bd);border-radius:9px;overflow:hidden;margin:12px 0 8px;position:relative}.bar i{display:block;height:100%}
+.bar u{position:absolute;top:-2px;bottom:-2px;width:2px;background:var(--tx);opacity:.5}
+.meta{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:14px}
+.pill{padding:3px 10px;border-radius:99px;font-size:12px;font-weight:700;color:#fff}
+.ok{background:var(--ok)}.warn{background:var(--warn)}.bad{background:var(--bad)}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.stat{background:var(--card);border:1px solid var(--bd);border-radius:16px;padding:14px}
+.stat b{font-size:28px;display:block;line-height:1.1}.stat span{font-size:12px;color:var(--mu)}
+.pr{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--bd);font-size:15px}.pr:last-child{border:0}
+.pr small{display:block;color:var(--mu);font-size:12px}
+</style></head><body><div id="app">
+<header><h1>📊 Attendance Predictor</h1><p>Swipe or tap the tabs</p></header>
+<nav id="nav"><div id="ind"></div><button class="on" data-i="0">Import</button><button data-i="1">Subjects</button><button data-i="2">Predict</button></nav>
+<div id="pan">
+<section>
+<div class="card"><h2>⚡ One-tap import from your ERP</h2>
+<ol style="margin:0 0 12px;padding-left:20px;font-size:14px">
+<li>Tap <b>Copy bookmarklet code</b> (one-time setup).</li>
+<li>Bookmark any page, name it <b>Get attendance</b>, edit the bookmark's URL and paste the code.</li>
+<li>Log in to <b>erp.vce.ac.in</b>, open the <b>Attendance</b> page, then open the bookmark (in Chrome, type its name in the address bar and pick it).</li>
+<li>It copies your table and brings you back here. Tap <b>Paste from clipboard</b>.</li></ol>
+<div class="btns"><button class="btn" onclick="cpBM()">Copy bookmarklet code</button><button class="btn g" onclick="pc()">Paste from clipboard</button></div>
+<div class="note">The bookmark runs inside your logged-in ERP tab, so your password never touches this page.</div></div>
+<div class="card"><h2>Or paste manually</h2>
+<textarea id="paste" placeholder="Paste your attendance table here. One subject per line:&#10;Maths   42   50   84%&#10;Physics, 30, 40&#10;&#10;(attended and held, either order)"></textarea>
+<div class="btns"><button class="btn" onclick="imp()">Import</button><button class="btn g" onclick="clr()">Clear all</button></div>
+<div class="note">Open your portal's attendance page, select the table, copy, then paste here. Data stays in your browser.</div></div>
+</section>
+<section>
+<div id="subs"></div>
+<div class="btns"><button class="btn g" onclick="add()">+ Add subject</button></div>
+</section>
+<section>
+<div class="card"><h2>Settings</h2>
+<div class="g2"><div><label>Minimum required %</label><input type="number" id="tgt" value="75" min="1" max="99" inputmode="numeric"></div>
+<div><label>Upcoming classes</label><input type="number" id="up" value="20" min="0" inputmode="numeric"></div></div>
+<label style="margin-top:12px">I'll attend <b id="pv">80</b>% of upcoming classes</label>
+<input type="range" id="pr" min="0" max="100" value="80" style="width:100%"></div>
+<div id="sum" class="stats"></div>
+<div class="card"><h2>Predicted per subject</h2><div id="pl"></div>
+<div class="note">Predicted % = (attended + upcoming × share) ÷ (held + upcoming)</div></div>
+</section>
+</div></div>
+<script>
+var rows=[],$=function(i){return document.getElementById(i)};
+try{var s=localStorage.getItem('att');if(s)rows=JSON.parse(s)}catch(e){}
+if(!rows.length)rows=[{n:'Maths',a:42,t:50},{n:'Physics',a:28,t:40},{n:'Chemistry',a:33,t:36}];
+function save(){try{localStorage.setItem('att',JSON.stringify(rows))}catch(e){}}
+function esc(x){return String(x).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;')}
+/* tabs */
+var pan=$('pan'),btns=document.querySelectorAll('nav button');
+function go(i){pan.scrollTo({left:i*pan.clientWidth,behavior:'smooth'})}
+function mark(i){btns.forEach(function(b,k){b.classList.toggle('on',k==i)});$('ind').style.transform='translateX('+(i*100)+'%)'}
+btns.forEach(function(b){b.onclick=function(){go(+b.dataset.i)}});
+pan.addEventListener('scroll',function(){mark(Math.round(pan.scrollLeft/pan.clientWidth))},{passive:true});
+/* ERP bookmarklet */
+var BM="javascript:(function(){var o=[];function sc(d){d.querySelectorAll('table').forEach(function(t){if(!/attend|present|held|percent|\\x25/i.test(t.innerText))return;t.querySelectorAll('tr').forEach(function(r){var c=[].map.call(r.children,function(x){return x.innerText.trim()});if(c.length<3)return;var k=-1,b=0;c.forEach(function(x,i){var l=(x.match(/[A-Za-z]/g)||[]).length;if(l>b){b=l;k=i}});if(k<0||b<3)return;var n=c.slice(k+1).filter(function(x){return /^\\d+(\\.\\d+)?\\x25?$/.test(x)});if(n.length>=2)o.push(c[k]+'\\t'+n.join('\\t'))})});d.querySelectorAll('iframe,frame').forEach(function(f){try{sc(f.contentDocument)}catch(e){}})}sc(document);if(!o.length){alert('No attendance table found. Open the Attendance page first, then tap again.');return}var s=o.join('\\n');function go(){alert('Copied '+o.length+' subjects. Opening predictor...');location.href='https://claude.ai/artifact/3ps16GRg2gPLnUvvh5NE4R'}if(navigator.clipboard)navigator.clipboard.writeText(s).then(go,function(){prompt('Copy this:',s)});else prompt('Copy this:',s)})();";
+function cpBM(){if(navigator.clipboard){navigator.clipboard.writeText(BM).then(function(){alert('Bookmarklet code copied. Now paste it as the URL of a new bookmark.')},function(){prompt('Copy this code:',BM)})}else prompt('Copy this code:',BM)}
+function pc(){if(!navigator.clipboard||!navigator.clipboard.readText){alert('Paste into the box below, then tap Import.');return}navigator.clipboard.readText().then(function(t){if(!t||!t.trim()){alert('Clipboard is empty.');return}$('paste').value=t;imp()},function(){alert('Clipboard blocked. Long-press the box below, paste, then tap Import.')})}
+/* data */
+function imp(){var out=[];
+$('paste').value.split(/\n/).forEach(function(l){l=l.trim();if(!l)return;
+var nums=(l.match(/\d+(\.\d+)?/g)||[]).map(Number);
+var name=l.split(/[\t,|]| {2,}|\s\d/)[0].replace(/[\d%]+$/,'').trim();
+if(nums.length<2||!name)return;
+var a=Math.min(nums[0],nums[1]),t=Math.max(nums[0],nums[1]);if(t>0)out.push({n:name,a:a,t:t})});
+if(!out.length){alert('No subject rows found. Use lines like: Maths 42 50');return}
+rows=out;save();draw();go(1)}
+function add(){rows.push({n:'New subject',a:0,t:0});save();draw();setTimeout(function(){var s=pan.children[1];s.scrollTo({top:s.scrollHeight,behavior:'smooth'})},50)}
+function clr(){if(!confirm('Remove all subjects?'))return;rows=[];$('paste').value='';save();draw()}
+function del(i){rows.splice(i,1);save();draw()}
+function upd(i,k,v){rows[i][k]=k=='n'?v:Math.max(0,+v||0);save();draw()}
+function info(r,T){var pc=r.t?r.a/r.t*100:0;
+if(!r.t)return{pc:0,st:'No data',cls:'warn',adv:'Add attended and held classes'};
+if(pc>=T){var x=Math.max(0,Math.floor(r.a*100/T-r.t+1e-9));return{pc:pc,st:'Safe',cls:'ok',adv:'Can skip '+x+' class'+(x==1?'':'es')}}
+var nd=Math.ceil((T*r.t-100*r.a)/(100-T)-1e-9);return{pc:pc,st:'Low',cls:'bad',adv:'Attend next '+nd+' in a row'}}
+function draw(){
+var T=+$('tgt').value||75,U=Math.max(0,+$('up').value||0),P=+$('pr').value/100;$('pv').textContent=Math.round(P*100);
+var sh='',ph='',A=0,H=0,PA=0,PH=0,low=0;
+rows.forEach(function(r,i){var f=info(r,T);if(f.cls=='bad')low++;
+var fa=r.a+U*P,ft=r.t+U,pp=ft?fa/ft*100:0;A+=r.a;H+=r.t;PA+=fa;PH+=ft;
+var col=f.pc>=T?'var(--ok)':f.pc>=T-10?'var(--warn)':'var(--bad)';
+sh+='<div class="card sub"><div class="top"><input type="text" value="'+esc(r.n)+'" onchange="upd('+i+',\'n\',this.value)"><button class="x" onclick="del('+i+')" aria-label="Delete">✕</button></div>'+
+'<div class="g2"><div><label>Attended</label><input type="number" inputmode="numeric" value="'+r.a+'" onchange="upd('+i+',\'a\',this.value)"></div>'+
+'<div><label>Held</label><input type="number" inputmode="numeric" value="'+r.t+'" onchange="upd('+i+',\'t\',this.value)"></div></div>'+
+'<div class="bar"><i style="width:'+Math.min(100,f.pc)+'%;background:'+col+'"></i><u style="left:'+T+'%"></u></div>'+
+'<div class="meta"><span><b>'+f.pc.toFixed(1)+'%</b> · '+f.adv+'</span><span class="pill '+f.cls+'">'+f.st+'</span></div></div>';
+ph+='<div class="pr"><span>'+esc(r.n)+'<small>Now '+f.pc.toFixed(1)+'%</small></span><b style="color:'+(pp>=T?'var(--ok)':'var(--bad)')+'">'+pp.toFixed(1)+'%</b></div>'});
+$('subs').innerHTML=sh||'<div class="card note">No subjects yet. Import from the first tab or add one below.</div>';
+$('pl').innerHTML=ph||'<div class="note">No subjects yet.</div>';
+var ov=H?A/H*100:0,po=PH?PA/PH*100:0;
+$('sum').innerHTML='<div class="stat"><b>'+ov.toFixed(1)+'%</b><span>Overall now</span></div>'+
+'<div class="stat"><b style="color:'+(po>=T?'var(--ok)':'var(--bad)')+'">'+po.toFixed(1)+'%</b><span>Overall predicted</span></div>'+
+'<div class="stat"><b>'+low+'</b><span>Below '+T+'% now</span></div>'+
+'<div class="stat"><b>'+rows.length+'</b><span>Subjects</span></div>'}
+['tgt','up','pr'].forEach(function(i){$(i).addEventListener('input',draw)});
+draw();
+</script></body></html>
